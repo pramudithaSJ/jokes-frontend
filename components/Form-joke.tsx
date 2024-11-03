@@ -1,6 +1,6 @@
 "use client";
 
-const jokeTypes = [
+export const jokeTypes = [
   "Any",
   "Programming",
   "Dark",

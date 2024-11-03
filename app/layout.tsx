@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "../components/Header";
 import "./globals.css";
 import { JokeProvider } from "@/context/joke-context";
+import { UserProvider } from "@/context/user-context";
 
 export const metadata: Metadata = {
   title: "Joke Generator",
@@ -18,7 +19,9 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen">
         <Header />
 
-        <JokeProvider>{children}</JokeProvider>
+        <JokeProvider>
+          <UserProvider>{children}</UserProvider>
+        </JokeProvider>
       </body>
     </html>
   );
