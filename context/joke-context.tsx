@@ -4,12 +4,14 @@ import axios from "axios";
 
 const BaseUrl = process.env.BASE_URL;
 const BASE_URL_MODERATOR = process.env.BASE_URL_MODERATOR;
+const BASE_URL_USER = process.env.BASE_URL_USER;
 
 export interface Joke {
   _id: string;
   type: string;
   text: string;
   date: Date;
+  status: "pending" | "approved" | "rejected";
 }
 
 interface JokeContextType {
@@ -35,6 +37,14 @@ interface JokeContextType {
   setSelectedJokeType: (type: string) => void;
   getJokeById: (id: string) => Promise<void>;
   deleteJoke: (id: string) => Promise<void>;
+  submitJoke: (joke: Joke) => Promise<void>;
+  selectedJokeData: Joke | null;
+  isDeletingLoading: boolean;
+  setIsDeletingLoading: (loading: boolean) => void;
+  isSubmittingLoading: boolean;
+  setIsSubmittingLoading: (loading: boolean) => void;
+  jokeforDisplay: Joke[] ;
+  getJokeforDisplay: (type: string) => Promise<void>;
 }
 
 export const JokeContext = createContext<JokeContextType>(
@@ -51,6 +61,11 @@ export const JokeProvider = ({ children }: { children: ReactNode }) => {
   const [selectedJoke, setSelectedJoke] = useState<string | null>(null);
   const [selectedJokeId, setSelectedJokeId] = useState<string | null>(null);
   const [selectedJokeType, setSelectedJokeType] = useState<string | null>(null);
+  const [selectedJokeData, setSelectedJokeData] = useState<Joke | null>(null);
+  const [isDeletingLoading, setIsDeletingLoading] = useState<boolean>(false);
+  const [isSubmittingLoading, setIsSubmittingLoading] =
+    useState<boolean>(false);
+  const [jokeforDisplay, setJokeforDisplay] = useState<Joke[]>([]);
 
   const getGeneratedJoke = async (type: string) => {
     try {
@@ -118,6 +133,9 @@ export const JokeProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = jokeList.find((joke) => joke._id === id);
       if (result) {
+        if (result) {
+          setSelectedJokeData(result);
+        }
         setSelectedJoke(result.text);
         setSelectedJokeId(result._id);
         setSelectedJokeType(result.type);
@@ -127,7 +145,28 @@ export const JokeProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const submitJoke = async (joke: Joke) => {
+    setIsSubmittingLoading(true);
+    joke.status = "approved";
+    try {
+      await axios.post(`${BASE_URL_MODERATOR}/jokes`, joke, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setSelectedJoke(null);
+      setSelectedJokeId(null);
+      setSelectedJokeType(null);
+      getJokeList();
+      setIsSubmittingLoading(false);
+    } catch (error) {
+      setIsSubmittingLoading(false);
+      console.error(error);
+    }
+  };
+
   async function deleteJoke(id: string | null) {
+    setIsDeletingLoading(true);
     try {
       await axios
         .delete(`${BASE_URL_MODERATOR}/jokes/${id}`, {
@@ -142,12 +181,27 @@ export const JokeProvider = ({ children }: { children: ReactNode }) => {
             setSelectedJokeId(null);
             setSelectedJokeType(null);
             getJokeList();
+            setIsDeletingLoading(false);
           }
         });
     } catch (error) {
       console.error(error);
+      setIsDeletingLoading(false);
     }
   }
+
+  const getJokeforDisplay = async (type: string) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL_USER}/jokes/randomByType/${type}`
+      );
+      if (response.data) {
+        setJokeforDisplay(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <JokeContext.Provider
@@ -174,6 +228,14 @@ export const JokeProvider = ({ children }: { children: ReactNode }) => {
         setSelectedJokeType,
         getJokeById,
         deleteJoke,
+        submitJoke,
+        selectedJokeData,
+        isDeletingLoading,
+        setIsDeletingLoading,
+        isSubmittingLoading,
+        setIsSubmittingLoading,
+        jokeforDisplay,
+        getJokeforDisplay,
       }}
     >
       {children}

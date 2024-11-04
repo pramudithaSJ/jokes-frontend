@@ -30,20 +30,38 @@ export default function Admin() {
           {jokeList.map((joke) => (
             <div
               key={joke._id}
-              className={`flex flex-col items-center border border-black p-5 w-full my-10 rounded-md hover:cursor-pointer ${
-                selectedJokeId === joke._id
-                  ? "bg-gray-500 text-white"
-                  : "hover:bg-gray-200"
+              className={`flex flex-col items-center border border-black p-5 w-full my-10 rounded-md ${
+                joke.status === "approved"
+                  ? "bg-gray-300 text-black cursor-default" // No hover effect and different styling for approved jokes
+                  : `hover:cursor-pointer ${
+                      selectedJokeId === joke._id
+                        ? "bg-gray-500 text-white"
+                        : "hover:bg-gray-200"
+                    }`
               }`}
               onClick={() => {
-                setSelectedJokeId(joke._id);
-                getJokeById(joke._id);
+                if (joke.status !== "approved") { // Only allow click if not approved
+                  setSelectedJokeId(joke._id);
+                  getJokeById(joke._id);
+                }
               }}
             >
               <p className="text-lg text-center mb-2">{joke.text}</p>
-              <p className="text-sm text-center bg-gray-200 text-black w-1/4 py-2 rounded-lg">
-                {joke.type}
-              </p>
+              <div className="flex space-x-3">
+                <p className="text-sm text-center bg-gray-200 text-black py-2 px-2 rounded-lg">
+                  {joke.type}
+                </p>
+                {joke.status === "pending" && (
+                  <p className="text-sm text-center bg-yellow-200 text-black py-2 px-2 rounded-lg">
+                    {joke.status}
+                  </p>
+                )}
+                {joke.status === "approved" && (
+                  <p className="text-sm text-center bg-green-200 text-black py-2 px-2 rounded-lg">
+                    {joke.status}
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </div>

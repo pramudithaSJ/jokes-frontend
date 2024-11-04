@@ -5,7 +5,11 @@ import Snackbar from "@mui/material/Snackbar";
 import React, { useContext } from "react";
 import { ClipLoader, RiseLoader } from "react-spinners";
 
-export default function ViewJoke() {
+interface ViewJokeProps {
+  isDisplay: boolean;
+}
+
+export default function ViewJoke({ isDisplay }: ViewJokeProps) {
   const {
     joke,
     loading,
@@ -14,6 +18,7 @@ export default function ViewJoke() {
     isSavingLoading,
     isToastOpen,
     handleToatsClose,
+    jokeforDisplay,
   } = useContext(JokeContext);
 
   async function onSave() {
@@ -22,6 +27,7 @@ export default function ViewJoke() {
       type: type,
       text: joke,
       date: new Date(),
+      status: "pending",
     };
 
     await saveJoke(data);
@@ -54,14 +60,34 @@ export default function ViewJoke() {
                   />
                   Save
                 </button>
-                
               </div>
             ) : (
               <div className="flex flex-col items-center text-gray-600 justify-center">
-                <h1 className="text-2xl font-bold">Step 1</h1>
-                <p className="text-lg">Selecet a type</p>
-                <h1 className="text-2xl font-bold">Step 2</h1>
-                <p className="text-lg">Click on generate</p>
+                {isDisplay ? (
+                  <div>
+                    {jokeforDisplay.length > 0 ? (
+                      <div>
+                        <h1 className="text-2xl font-bold">Joke</h1>
+                        <p className="text-lg">{jokeforDisplay[0].text}</p>
+                        <h1 className="text-2xl font-bold">Type</h1>
+                        <p className="text-lg">{jokeforDisplay[0].type}</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <h1 className="text-2xl font-bold">
+                          No Joke to display
+                        </h1>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <h1 className="text-2xl font-bold">Step 1</h1>
+                    <p className="text-lg">Selecet a type</p>
+                    <h1 className="text-2xl font-bold">Step 2</h1>
+                    <p className="text-lg">Click on generate</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

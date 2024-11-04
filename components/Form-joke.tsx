@@ -18,12 +18,26 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { JokeContext } from "@/context/joke-context";
 import { useContext } from "react";
 
-export default function GenerateJoke() {
-  const { isSavingLoading, getGeneratedJoke, setType, type, loading } =
-    useContext(JokeContext);
+interface GenerateJokeProps {
+  isDisplay: boolean;
+}
+
+export default function GenerateJoke({ isDisplay }: GenerateJokeProps) {
+  const {
+    isSavingLoading,
+    getGeneratedJoke,
+    setType,
+    type,
+    loading,
+    getJokeforDisplay,
+  } = useContext(JokeContext);
 
   async function onSubmit() {
-    await getGeneratedJoke(type);
+    if (isDisplay) {
+      await getJokeforDisplay(type);
+    } else {
+      await getGeneratedJoke(type);
+    }
   }
 
   return (
@@ -59,7 +73,7 @@ export default function GenerateJoke() {
               data-testid="loader"
             />
           </div>
-          <span> Generate</span>
+          {isDisplay ? " Display Joke" : "Generate Joke"}
         </button>
         <div />
       </div>
